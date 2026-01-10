@@ -16,4 +16,4 @@ This project is an attempt to reverse engineer the protocol used by the **iScoot
 ## Usage
 
 1. Open `index.html` in a browser that supports Web Bluetooth (e.g., Chrome, Edge).
-2. Click "Connect" to scan for and connect to your scooter.
+2. Click "Connect" to scan for and connect to your scooter. 
