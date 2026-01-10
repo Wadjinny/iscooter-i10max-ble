@@ -86,15 +86,17 @@ class ScooterController:
         self.client = client
     
     async def send_command(self, sub_cmd, value):
-        # AA 03 04 [Sub] 88 [Val] 00 [Check] BB
-        base = [0xAA, 0x03, 0x04, sub_cmd, 0x88, value, 0x00]
-        xor = 0
-        for b in base:
+
+        await self.send_raw_packet([0x03, 0x04, sub_cmd, 0x88, value, 0x00])
+
+    async def send_raw_packet(self, payload):
+        xor = 0xAA
+        for b in payload:
             xor ^= b
-        final_cmd = bytes(base + [xor, 0xBB])
+        
+        final_cmd = bytes([0xAA] + payload + [xor, 0xBB])
         print(f"CMD: {final_cmd.hex().upper()}")
         await self.client.write_gatt_char(WRITE_UUID, final_cmd)
-        await asyncio.sleep(0.5)
 
     async def set_light(self, on):
         await self.send_command(0x02, 0x01 if on else 0x00)
@@ -115,7 +117,7 @@ class ScooterController:
         
     async def set_zero_start(self, non_zero):
         # non_zero: True=Kick-to-start, False=Zero-start
-        await self.send_command(0x06, 0x01 if non_zero else 0x00)
+        await self.send_command(0x06, 0x00 if non_zero else 0x01)
 
 crypto = Crypto()
 q = asyncio.Queue()
@@ -134,11 +136,11 @@ def notification_handler(sender, data):
             q.put_nowait(text)
         
         # Binary Packet Parsing (AA ... BB)
-        if len(data) >= 10 and data[0] == 0xAA and data[-1] == 0xBB:
+        if len(data) >= 6 and data[0] == 0xAA and data[-1] == 0xBB:
             cmd_type = data[1]
             
             # 0xA1: Status (Speed, Battery, Mode)
-            if cmd_type == 0xA1:
+            if cmd_type == 0xA1 and len(data) >= 10:
                 battery = data[3]
                 speed_raw = (data[4] << 8) | data[5]
                 speed = speed_raw / 10.0
@@ -153,7 +155,7 @@ def notification_handler(sender, data):
                 print(f"[Status] Speed: {speed:.1f} km/h | Battery: {battery}% | Mode: {mode_str}")
 
             # 0xA2: Trip/Odometer
-            elif cmd_type == 0xA2:
+            elif cmd_type == 0xA2 and len(data) >= 10:
                 # Trip: High=data[4], Low=data[3]
                 trip_raw = (data[4] << 8) | data[3]
                 trip = trip_raw / 10.0
@@ -167,13 +169,39 @@ def notification_handler(sender, data):
                 print(f"[Trip/Odo] Trip: {trip:.1f} km | ODO: {odo:.1f} km")
 
             # 0xA3: Version Info
-            elif cmd_type == 0xA3:
+            elif cmd_type == 0xA3 and len(data) >= 6:
                 sw_ver = data[4]
                 hw_ver = data[5]
                 print(f"[Version] Software: {sw_ver/10.0:.1f} | Hardware: {hw_ver/10.0:.1f}")
+                # Byte 3 might be self-check flags?
+                status_byte = data[3]
+                if status_byte != 0:
+                     print(f"[Status/Check] Flags: {status_byte:08b}")
+            
+            # 0x04: Speed Limit Response
+            # SpeedLimitActivity: AA 04 [Len] [Gear] ... [5][6]==Limit ... BB
+            elif cmd_type == 0x04:
+                # data[0]=AA
+                # data[1]=04
+                # data[2]=04 (Maybe Sub-cmd/Length in other contexts, but here just bytes)
+                # data[3]=Gear
+                # data[4]=?
+                # data[5]=Limit High
+                # data[6]=Limit Low
+                # data[7]=?
+                # data[8]=BB
                 
-            # else:
-            #     print(f"Received (Hex): {data.hex().upper()}")
+                if len(data) >= 9:
+                    gear = data[3]
+                    limit_raw = (data[5] << 8) | data[6]
+                    limit = limit_raw / 10.0 # Activity divides by 10
+                    
+                    print(f"[SpeedLimit] Gear {gear}: {limit:.1f} km/h")
+                else:
+                     print(f"[SpeedLimit] Received short packet: {data.hex().upper()}")
+
+            else:
+                 print(f"Received (Hex): {data.hex().upper()}")
 
     except Exception as e:
         print(f"Error parsing packet: {e}")
@@ -184,12 +212,12 @@ async def run(address):
         print(f"Connected: {client.is_connected}")
         
         await client.start_notify(READ_UUID, notification_handler)
-        await asyncio.sleep(1.0)
+        await asyncio.sleep(.1)
         
         # --- Authentication ---
         print("Authenticating...")
         await client.write_gatt_char(WRITE_UUID, b"+VER?")
-        await asyncio.sleep(0.5)
+        # await asyncio.sleep(0.5)
         
         # PM Handshake with Retry
         pm_auth_success = False
@@ -227,7 +255,7 @@ async def run(address):
         
         my_random_code = "".join([f"{random.randint(0, 255):02X}" for _ in range(6)])
         await client.write_gatt_char(WRITE_UUID, f"+PA<{my_random_code}".encode())
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.1)
         
         await client.write_gatt_char(WRITE_UUID, f"CODE={LEGACY_PASSWORD}".encode())
         await asyncio.sleep(1)
@@ -265,8 +293,9 @@ async def run(address):
         await scooter.set_cruise(False)
         await asyncio.sleep(1)
         
-        print("Setting Zero Start")
-        await scooter.set_zero_start(True) 
+        print("Setting Zero Start ")
+        await scooter.set_zero_start(False) 
+        await asyncio.sleep(1)
         
         print("--- DEMO END ---")
         print("\nMonitoring scooter status for 15 seconds (Ctrl+C to stop)...")
