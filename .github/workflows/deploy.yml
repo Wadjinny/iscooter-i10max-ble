@@ -7,11 +7,11 @@ on:
 
 jobs:
   frontend:
-    uses: Wadjinny/workflows/.github/workflows/deploy-pnpm-vite.yml@main
+    uses: Wadjinny/workflows/.github/workflows/deploy-static-html.yml@main
     with:
-      VITE_PROJECT_DIR: frontend
+      source_dir: frontend
     secrets: inherit
-
+    
   caddy:
     needs: [frontend]
     uses: Wadjinny/workflows/.github/workflows/deploy-caddy-site.yml@main
