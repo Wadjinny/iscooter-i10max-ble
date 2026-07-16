@@ -80,6 +80,72 @@ button {
   padding: 24px 28px 48px;
 }
 
+/* Welcome (disconnected) */
+.welcome {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 140px);
+  padding: 24px 0 48px;
+}
+
+.welcome[hidden],
+.session[hidden] {
+  display: none !important;
+}
+
+.welcome-card {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  padding: 36px 32px;
+  margin-bottom: 0;
+}
+
+.welcome-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-ctrl);
+  background: var(--indigo);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 20px;
+  margin: 0 auto 18px;
+  box-shadow: var(--sh-pop);
+}
+
+.welcome-card h2 {
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+
+.welcome-card > p {
+  font-size: 13px;
+  color: var(--g500);
+  margin-bottom: 22px;
+  line-height: 1.5;
+}
+
+.welcome-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 13px 22px;
+}
+
+.welcome-status {
+  margin-top: 14px;
+  margin-bottom: 0 !important;
+  min-height: 1.2em;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--indigo);
+}
+
 /* Top bar */
 .topbar {
   display: flex;
@@ -128,6 +194,50 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.nav-connection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--white);
+  border-radius: var(--r-pill);
+  padding: 5px 5px 5px 14px;
+  box-shadow: var(--sh-card);
+  max-width: min(360px, 50vw);
+}
+
+.nav-connection[hidden] {
+  display: none !important;
+}
+
+.nav-connection-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
+.nav-connection-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--g900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.nav-disconnect {
+  padding: 8px 14px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .nav-connection-name {
+    max-width: 90px;
+  }
 }
 
 .icon-btn {
@@ -405,6 +515,180 @@ input:focus {
   color: var(--indigo);
 }
 
+button.status-item.status-action {
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  border: none;
+  width: 100%;
+  transition: 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.status-action-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.status-action-top .label {
+  margin-bottom: 0;
+}
+
+.status-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--g100);
+  color: var(--g500);
+}
+
+.status-icon svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+button.status-item.status-action:hover:not(:disabled) {
+  box-shadow: var(--sh-card);
+}
+
+button.status-item.status-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+button.status-item.status-action.busy {
+  cursor: wait;
+  opacity: 1;
+}
+
+button.status-item.status-action.tone-danger {
+  background: var(--red-soft);
+}
+button.status-item.status-action.tone-danger .status-icon {
+  background: rgba(220, 38, 38, 0.12);
+  color: var(--red);
+}
+button.status-item.status-action.tone-danger .value {
+  color: var(--red);
+}
+
+button.status-item.status-action.tone-ok {
+  background: var(--green-soft);
+}
+button.status-item.status-action.tone-ok .status-icon {
+  background: rgba(5, 150, 105, 0.12);
+  color: var(--green);
+}
+button.status-item.status-action.tone-ok .value {
+  color: var(--green);
+}
+
+button.status-item.status-action.tone-active {
+  background: var(--indigo-soft);
+}
+button.status-item.status-action.tone-active .status-icon {
+  background: rgba(79, 70, 229, 0.12);
+  color: var(--indigo);
+}
+button.status-item.status-action.tone-active .value {
+  color: var(--indigo);
+}
+
+button.status-item.status-action.tone-warn {
+  background: var(--amber-soft);
+}
+button.status-item.status-action.tone-warn .status-icon {
+  background: rgba(217, 119, 6, 0.14);
+  color: var(--amber);
+}
+button.status-item.status-action.tone-warn .value {
+  color: var(--amber);
+}
+
+button.status-item.status-action.tone-muted {
+  background: var(--g100);
+}
+button.status-item.status-action.tone-muted .status-icon {
+  background: var(--g200);
+  color: var(--g500);
+}
+button.status-item.status-action.tone-muted .value {
+  color: var(--g500);
+}
+
+button.status-item.status-action.tone-danger:hover:not(:disabled),
+button.status-item.status-action.tone-ok:hover:not(:disabled),
+button.status-item.status-action.tone-active:hover:not(:disabled),
+button.status-item.status-action.tone-warn:hover:not(:disabled),
+button.status-item.status-action.tone-muted:hover:not(:disabled) {
+  filter: brightness(0.98);
+}
+
+button.status-item.status-action .btn-spinner {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--g300);
+  border-top-color: var(--indigo);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%) translateY(12px);
+  z-index: 1100;
+  min-width: 220px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 12px 18px;
+  border-radius: var(--r-pill);
+  background: var(--white);
+  color: var(--g900);
+  box-shadow: var(--sh-hover);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.toast.err {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
 /* Command groups */
 .cmd-group {
   margin-bottom: 14px;
@@ -422,6 +706,30 @@ input:focus {
 }
 
 /* Messages */
+.collapse-btn {
+  flex-shrink: 0;
+}
+
+.collapse-btn svg {
+  transition: transform 0.2s;
+}
+
+.card.collapsed .collapse-btn svg {
+  transform: rotate(-90deg);
+}
+
+.card.collapsed .card-head {
+  margin-bottom: 0;
+}
+
+.collapse-body {
+  display: block;
+}
+
+.card.collapsed .collapse-body {
+  display: none;
+}
+
 .log-toolbar {
   display: flex;
   align-items: center;

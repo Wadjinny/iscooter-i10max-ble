@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app">
+  <div class="app" id="app">
     <header class="topbar">
       <div class="logo">iS</div>
       <div class="brand">
@@ -22,6 +22,11 @@
         <p>Web Bluetooth control</p>
       </div>
       <div class="topbar-actions">
+        <div class="nav-connection" id="nav-connection" hidden>
+          <span class="nav-connection-dot" aria-hidden="true"></span>
+          <span class="nav-connection-name" id="session-device-name">Scooter</span>
+          <button type="button" class="btn ghost nav-disconnect" id="disconnect-btn">Disconnect</button>
+        </div>
         <button type="button" class="icon-btn" id="theme-toggle" aria-label="Toggle theme" title="Toggle theme">
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
@@ -34,34 +39,25 @@
       </div>
     </header>
 
-    <div class="grid-2">
-      <section class="card" id="device-panel">
-        <div class="card-head">
-          <div>
-            <h2>Connection</h2>
-            <p class="card-sub">Scan and pair over BLE</p>
-          </div>
-        </div>
-        <div class="device-actions">
-          <button type="button" class="btn primary" id="scan-btn">Scan &amp; Connect</button>
-          <button type="button" class="btn ghost" id="disconnect-btn">Disconnect</button>
-        </div>
-        <div id="device-info"></div>
-        <div class="divider"></div>
-        <div class="auth-row">
-          <div class="field">
-            <label for="auth-password">Auth password</label>
-            <input type="text" id="auth-password" value="000000" autocomplete="off">
-          </div>
-          <button type="button" class="btn ghost" id="save-pwd-btn">Save default</button>
-        </div>
-      </section>
+    <!-- Hidden: kept for auth password default / save -->
+    <input type="hidden" id="auth-password" value="000000">
 
+    <section class="welcome" id="welcome-view">
+      <div class="welcome-card card">
+        <div class="welcome-logo">iS</div>
+        <h2>Connect your scooter</h2>
+        <p>Use Web Bluetooth to pair with your iScooter i10 Max.</p>
+        <button type="button" class="btn primary welcome-btn" id="scan-btn">Scan &amp; Connect</button>
+        <p class="welcome-status" id="device-info"></p>
+      </div>
+    </section>
+
+    <div class="session" id="session-view" hidden>
       <section class="card" id="status-panel">
         <div class="card-head">
           <div>
             <h2>Live status</h2>
-            <p class="card-sub">Telemetry from the scooter</p>
+            <p class="card-sub">Tap a colored tile to change it</p>
           </div>
         </div>
         <div class="status-grid">
@@ -73,30 +69,50 @@
             <span class="label">Battery</span>
             <span class="value" id="status-battery">--</span><span class="unit">%</span>
           </div>
-          <div class="status-item">
-            <span class="label">Mode</span>
+          <button type="button" class="status-item status-action" id="mode-toggle-btn" disabled>
+            <span class="status-action-top">
+              <span class="status-icon" id="mode-icon" aria-hidden="true"></span>
+              <span class="label">Mode</span>
+            </span>
             <span class="value" id="status-mode">--</span>
-          </div>
+            <span class="btn-spinner" id="mode-spinner" hidden></span>
+          </button>
           <div class="status-item">
             <span class="label">Light</span>
             <span class="value" id="status-light">--</span>
           </div>
-          <div class="status-item">
-            <span class="label">Cruise</span>
+          <button type="button" class="status-item status-action" id="cruise-toggle-btn" disabled>
+            <span class="status-action-top">
+              <span class="status-icon" id="cruise-icon" aria-hidden="true"></span>
+              <span class="label">Cruise</span>
+            </span>
             <span class="value" id="status-cruise">--</span>
-          </div>
-          <div class="status-item">
-            <span class="label">Start mode</span>
+            <span class="btn-spinner" id="cruise-spinner" hidden></span>
+          </button>
+          <button type="button" class="status-item status-action" id="start-toggle-btn" disabled>
+            <span class="status-action-top">
+              <span class="status-icon" id="start-icon" aria-hidden="true"></span>
+              <span class="label">Start mode</span>
+            </span>
             <span class="value" id="status-start">--</span>
-          </div>
-          <div class="status-item">
-            <span class="label">Unit</span>
+            <span class="btn-spinner" id="start-spinner" hidden></span>
+          </button>
+          <button type="button" class="status-item status-action" id="unit-toggle-btn" disabled>
+            <span class="status-action-top">
+              <span class="status-icon" id="unit-icon" aria-hidden="true"></span>
+              <span class="label">Unit</span>
+            </span>
             <span class="value" id="status-unit">--</span>
-          </div>
-          <div class="status-item">
-            <span class="label">Lock</span>
+            <span class="btn-spinner" id="unit-spinner" hidden></span>
+          </button>
+          <button type="button" class="status-item status-action" id="lock-toggle-btn" disabled>
+            <span class="status-action-top">
+              <span class="status-icon" id="lock-icon" aria-hidden="true"></span>
+              <span class="label">Lock</span>
+            </span>
             <span class="value" id="status-lock">--</span>
-          </div>
+            <span class="btn-spinner" id="lock-spinner" hidden></span>
+          </button>
           <div class="status-item">
             <span class="label">Trip</span>
             <span class="value" id="status-trip">--</span><span class="unit">km</span>
@@ -111,122 +127,103 @@
           </div>
         </div>
       </section>
-    </div>
 
-    <div class="grid-2">
-      <section class="card" id="command-panel">
-        <div class="card-head">
-          <div>
-            <h2>Commands</h2>
-            <p class="card-sub">Send control frames to the scooter</p>
-          </div>
-        </div>
-
-        <div class="cmd-group">
-          <div class="cmd-label">Lock</div>
-          <div class="btn-row">
-            <button type="button" class="btn ghost" id="unlock-btn">Unlock</button>
-            <button type="button" class="btn ghost" id="lock-btn">Lock</button>
-          </div>
-        </div>
-
-        <div class="cmd-group">
-          <div class="cmd-label">Light</div>
-          <div class="btn-row">
-            <button type="button" class="btn ghost" id="light-on-btn">Light on</button>
-            <button type="button" class="btn ghost" id="light-off-btn">Light off</button>
-          </div>
-        </div>
-
-        <div class="cmd-group">
-          <div class="cmd-label">Ride mode</div>
-          <div class="btn-row">
-            <button type="button" class="btn ghost" id="mode-eco-btn">Eco</button>
-            <button type="button" class="btn ghost" id="mode-drive-btn">Drive</button>
-            <button type="button" class="btn ghost" id="mode-sport-btn">Sport</button>
-          </div>
-        </div>
-
-        <div class="cmd-group">
-          <div class="cmd-label">Units &amp; cruise</div>
-          <div class="btn-row">
-            <button type="button" class="btn ghost" id="unit-kmh-btn">km/h</button>
-            <button type="button" class="btn ghost" id="unit-mph-btn">mph</button>
-            <button type="button" class="btn ghost" id="cruise-on-btn">Cruise on</button>
-            <button type="button" class="btn ghost" id="cruise-off-btn">Cruise off</button>
-          </div>
-        </div>
-
-        <div class="cmd-group">
-          <div class="cmd-label">Start mode</div>
-          <div class="btn-row">
-            <button type="button" class="btn ghost" id="zero-start-btn">Zero start</button>
-            <button type="button" class="btn ghost" id="kick-start-btn">Kick start</button>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="cmd-group">
-          <div class="cmd-label">Speed limit</div>
-          <div class="field-row">
-            <div class="field">
-              <label for="gear">Gear</label>
-              <input type="number" id="gear" min="1" max="3" value="3">
+      <div class="grid-2">
+        <section class="card" id="command-panel">
+          <div class="card-head">
+            <div>
+              <h2>Commands</h2>
+              <p class="card-sub">Send control frames to the scooter</p>
             </div>
-            <div class="field">
-              <label for="speed-limit">Limit (km/h)</label>
-              <input type="number" id="speed-limit" min="1" max="50" value="25">
+          </div>
+
+          <div class="cmd-group">
+            <div class="cmd-label">Light</div>
+            <div class="btn-row">
+              <button type="button" class="btn ghost" id="light-on-btn">Light on</button>
+              <button type="button" class="btn ghost" id="light-off-btn">Light off</button>
             </div>
-            <button type="button" class="btn ghost" id="set-speed-limit-btn">Set limit</button>
-            <button type="button" class="btn ghost" id="get-speed-limit-btn">Get limit</button>
           </div>
-        </div>
 
-        <div class="divider"></div>
+          <div class="divider"></div>
 
-        <div class="cmd-group">
-          <div class="cmd-label">Password</div>
-          <div class="field-row">
-            <div class="field">
-              <label for="new-password">New password</label>
-              <input type="text" id="new-password" placeholder="123456" autocomplete="off">
+          <div class="cmd-group">
+            <div class="cmd-label">Speed limit</div>
+            <div class="field-row">
+              <div class="field">
+                <label for="gear">Gear</label>
+                <input type="number" id="gear" min="1" max="3" value="3">
+              </div>
+              <div class="field">
+                <label for="speed-limit">Limit (km/h)</label>
+                <input type="number" id="speed-limit" min="1" max="50" value="25">
+              </div>
+              <button type="button" class="btn ghost" id="set-speed-limit-btn">Set limit</button>
+              <button type="button" class="btn ghost" id="get-speed-limit-btn">Get limit</button>
             </div>
-            <button type="button" class="btn ghost" id="change-pwd-btn">Change password</button>
           </div>
-        </div>
-      </section>
 
-      <section class="card" id="messages-panel">
-        <div class="card-head">
-          <div>
-            <h2>Received messages</h2>
-            <p class="card-sub">Protocol log</p>
+          <div class="divider"></div>
+
+          <div class="cmd-group">
+            <div class="cmd-label">Password</div>
+            <div class="field-row">
+              <div class="field">
+                <label for="new-password">New password</label>
+                <input type="text" id="new-password" placeholder="123456" autocomplete="off">
+              </div>
+              <button type="button" class="btn ghost" id="change-pwd-btn">Change password</button>
+            </div>
+            <div class="field-row" style="margin-top: 10px;">
+              <div class="field">
+                <label for="auth-password-edit">Auth password</label>
+                <input type="text" id="auth-password-edit" value="000000" autocomplete="off">
+              </div>
+              <button type="button" class="btn ghost" id="save-pwd-btn">Save default</button>
+            </div>
           </div>
-        </div>
-        <div class="log-toolbar">
-          <label class="check">
-            <input type="checkbox" id="log-record-chk" checked>
-            Record
-          </label>
-          <button type="button" class="btn ghost" id="log-clear-btn">Clear</button>
-        </div>
-        <pre id="messages"></pre>
-      </section>
+        </section>
+
+        <section class="card collapsed" id="messages-panel">
+          <div class="card-head">
+            <div>
+              <h2>Received messages</h2>
+              <p class="card-sub">Protocol log</p>
+            </div>
+            <button type="button" class="icon-btn collapse-btn" id="messages-collapse-btn" aria-expanded="false" aria-controls="messages-body" title="Expand">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m6 9 6 6 6-6"/>
+              </svg>
+            </button>
+          </div>
+          <div class="collapse-body" id="messages-body">
+            <div class="log-toolbar">
+              <label class="check">
+                <input type="checkbox" id="log-record-chk" checked>
+                Record
+              </label>
+              <button type="button" class="btn ghost" id="log-clear-btn">Clear</button>
+            </div>
+            <pre id="messages"></pre>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 
+  <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+
   <div id="auth-error-modal" class="modal">
-    <div class="modal-content">
+    <form class="modal-content" id="auth-retry-form">
       <div class="bubble">!</div>
       <h3>Authentication failed</h3>
       <p>Incorrect password.<br>Enter the correct password to retry.</p>
-      <input type="text" id="retry-password" placeholder="Password" autocomplete="off">
+      <input type="text" id="retry-password" name="password" placeholder="Password" autocomplete="off">
       <div class="modal-actions">
-        <button type="button" class="btn primary" id="retry-auth-btn">Retry</button>
+        <button type="submit" class="btn primary" id="retry-auth-btn">Retry</button>
         <button type="button" class="btn ghost" id="cancel-auth-btn">Cancel</button>
       </div>
-    </div>
+    </form>
   </div>
 
   <script src="script.js"></script>
