@@ -303,13 +303,13 @@ function handleNotification(event) {
             const lightEl = document.getElementById('status-light');
             if (lightEl) {
                 lightEl.textContent = isLightOn ? 'ON' : 'OFF';
-                lightEl.style.color = isLightOn ? '#4caf50' : 'inherit';
+                lightEl.className = 'value ' + (isLightOn ? 'on' : 'off');
             }
 
             const cruiseEl = document.getElementById('status-cruise');
             if (cruiseEl) {
                 cruiseEl.textContent = isCruiseOn ? 'ON' : 'OFF';
-                cruiseEl.style.color = isCruiseOn ? '#2196f3' : 'inherit';
+                cruiseEl.className = 'value ' + (isCruiseOn ? 'active' : 'off');
             }
 
             const startEl = document.getElementById('status-start');
@@ -325,7 +325,7 @@ function handleNotification(event) {
             const lockEl = document.getElementById('status-lock');
             if (lockEl) {
                 lockEl.textContent = isLocked ? 'LOCKED' : 'UNLOCKED';
-                lockEl.style.color = isLocked ? '#f44336' : '#4caf50';
+                lockEl.className = 'value ' + (isLocked ? 'locked' : 'unlocked');
             }
         }
 
@@ -443,3 +443,12 @@ document.getElementById('get-speed-limit-btn').onclick = () => {
 document.getElementById('log-clear-btn').onclick = () => {
     messages.textContent = '';
 };
+
+const themeToggle = document.getElementById('theme-toggle');
+if (themeToggle) {
+    themeToggle.onclick = () => {
+        const root = document.documentElement;
+        const next = root.classList.toggle('dark') ? 'dark' : 'light';
+        localStorage.setItem('theme', next);
+    };
+}
