@@ -15,13 +15,19 @@ Browser UI to connect to an **iScooter i10 Max** over BLE and reverse-engineer /
 - Live speed, battery, mode, lock, and related status
 - 100% client-side — no backend
 
-## Usage
+## Run locally
 
-1. Open the site (or `frontend/index.html`) in Chrome or Edge — Web Bluetooth required.
-2. Use HTTPS or `localhost` (BLE is not available on insecure origins).
-3. Click **Connect** and pick your scooter.
+Static HTML/CSS/JS under `frontend/` — no build step. Serve over `localhost` so Web Bluetooth is allowed:
 
-Static HTML/CSS/JS under `frontend/` — no build step.
+```bash
+python3 -m http.server -d frontend 8080
+```
+
+Then open http://localhost:8080 in Chrome or Edge.
+
+1. Use HTTPS or `localhost` (BLE is not available on insecure origins).
+2. Click **Connect** and pick your scooter.
+
 
 ## Deploy
 
