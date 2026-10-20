@@ -1,4 +1,4 @@
-iscooter.w-ilyas.site {
+iscooter.w-ilyas.ink, iscooter.w-ilyas.site {
 	encode gzip
 	root * /home/ubuntu/thinkering/iscooter-i10max-ble
 	try_files {path} /index.html
